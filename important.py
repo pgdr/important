@@ -123,14 +123,8 @@ def furthest_min_vertex_cut(G, X, Y, D, k):
 
     # Project: v ∈ Rmax iff v_out is reachable.
     # (This excludes cut vertices whose (v_in->v_out) edge is saturated.)
-    Rmax = set()
-    for v in G.nodes:
-        if v in D:
-            continue
-        if (v, "out") in reachable:
-            Rmax.add(v)
-
-    return flow_value, Rmax
+    Rmax = FS({v for v in G.nodes if v not in D and (v, "out") in reachable})
+    return flow_value, FS(Rmax)
 
 
 def pick_boundary_vertex(G, Rmax, X, Y, D):
@@ -197,7 +191,7 @@ def important_separators(G, s, t, k):
     if s not in G or t not in G:
         raise ValueError("s and t must be vertices of G")
     if k < 0:
-        return set()
+        return Ø
 
     if G.is_directed():
         raise ValueError("G must be undirected")
@@ -206,4 +200,4 @@ def important_separators(G, s, t, k):
     Y0 = FS([t])
     D0 = Ø
 
-    yield from rec_important(G, X0, Y0, k, D0)
+    yield from rec_important(G, FS(X0), FS(Y0), k, FS(D0))
