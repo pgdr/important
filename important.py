@@ -3,7 +3,8 @@ from functools import cache
 import networkx as nx
 
 FS = frozenset
-Ø=FS()
+Ø = FS()
+
 
 def exists_path_avoiding(G, X, Y, D):
     """Is there an X-to-Y path in G after deleting vertices in D?"""
@@ -183,7 +184,7 @@ def rec_important(G, X, Y, k, D):
 
         # Branch 2: force v to the X-side (so v cannot be in the separator)
         for S in rec(FS(set(X) | {v}), Y, k, D):
-            out.add(S)
+            out.add(FS(S))
 
         return FS(out)
 
