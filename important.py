@@ -187,7 +187,7 @@ def rec_important(G, X, Y, k, D):
 
         return FS(out)
 
-    return FS(rec(X, Y, k, D))
+    yield from rec(X, Y, k, D)
 
 
 def important_separators(G, s, t, k):
