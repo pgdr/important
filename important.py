@@ -3,7 +3,7 @@ from functools import cache
 import networkx as nx
 
 FS = frozenset
-
+Ø=FS()
 
 def exists_path_avoiding(G, X, Y, D):
     """Is there an X-to-Y path in G after deleting vertices in D?"""
@@ -160,20 +160,20 @@ def rec_important(G, X, Y, k, D):
     @cache
     def rec(X, Y, k, D):
         if k < 0:
-            return FS()  # empty family
+            return Ø  # empty family
 
         # If already disconnected, empty separator is the unique important separator here
         if not exists_path_avoiding(G, X, Y, D):
-            return FS([FS()])
+            return FS([Ø])
 
         lam, Rmax = furthest_min_vertex_cut(G, X, Y, D, k)
         if lam > k:
-            return FS()
+            return Ø
 
         v = pick_boundary_vertex(G, Rmax, X, Y, D)
         if v is None:
             # Should not happen when connected, but safe fallback
-            return FS([FS()])
+            return FS([Ø])
 
         out = set()
 
@@ -192,7 +192,7 @@ def rec_important(G, X, Y, k, D):
 
 def important_separators(G, s, t, k):
     if s == t:
-        return {FS()}
+        return {Ø}
     if s not in G or t not in G:
         raise ValueError("s and t must be vertices of G")
     if k < 0:
@@ -203,6 +203,6 @@ def important_separators(G, s, t, k):
 
     X0 = FS([s])
     Y0 = FS([t])
-    D0 = FS()
+    D0 = Ø
 
     return rec_important(G, X0, Y0, k, D0)

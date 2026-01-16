@@ -140,18 +140,22 @@ if __name__ == "__main__":
         start = dt.now()
         print(f"{k = }")
         seps = important_separators(G, s, t, k)
-        print(f"important separators: {len(seps)}")
+        all_seps = set()
         size_s = 0
         best_S = []
         R = set()  # reachability
         for S in seps:
+            all_seps.add(S)
             cR = s_component(G, s, t, S)
             if len(cR) > size_s:
                 R = cR
                 size_s = len(R)
                 best_S = S
+                print(size_s, end=".. ")
+        print()
         end = dt.now()
         delta_time = round((end - start).total_seconds(), 2)
+        print(f"important separators: {len(all_seps)}")
         print("optimal size:", size_s)
         print("S:", best_S)
         print("time:", delta_time, "seconds")
