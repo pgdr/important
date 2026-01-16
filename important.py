@@ -205,4 +205,4 @@ def important_separators(G, s, t, k):
     Y0 = FS([t])
     D0 = Ø
 
-    return rec_important(G, X0, Y0, k, D0)
+    yield from rec_important(G, X0, Y0, k, D0)
