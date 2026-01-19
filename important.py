@@ -6,10 +6,10 @@ FS = frozenset
 Ø = FS()
 
 
-def exists_path_avoiding(G, X, Y, D):
+def _exists_path_avoiding(G, X, Y, D):
     """Is there an X-to-Y path in G after deleting vertices in D?"""
-    forbidden = set(D)
-    targets = set(Y)
+    forbidden = FS(D)
+    targets = FS(Y)
     seen = set(forbidden)
     q = collections.deque()
 
@@ -30,7 +30,7 @@ def exists_path_avoiding(G, X, Y, D):
     return False
 
 
-def build_split_network(G, X, Y, D, k):
+def _build_split_network(G, X, Y, D, k):
     """
     Build the standard vertex-splitting flow network for unit vertex capacities.
       - each v becomes v_in -> v_out with capacity 1 (unless v in X∪Y, then INF)
@@ -92,7 +92,7 @@ def build_split_network(G, X, Y, D, k):
     return H, SRC, SNK
 
 
-def furthest_min_vertex_cut(G, X, Y, D, k):
+def _furthest_min_vertex_cut(G, X, Y, D, k):
     """
     Return (λ, Rmax) where λ is the min (X,Y)-vertex cut size in G - D
     (unit vertex capacities outside X∪Y), and Rmax is the *furthest*
@@ -101,7 +101,7 @@ def furthest_min_vertex_cut(G, X, Y, D, k):
     We compute Rmax from residual reachability after a maxflow in the split network,
     projecting reachable v_out nodes back to original vertices.
     """
-    H, SRC, SNK = build_split_network(G, X, Y, D, k)
+    H, SRC, SNK = _build_split_network(G, X, Y, D, k)
     R = nx.algorithms.flow.preflow_push(
         H, SRC, SNK, capacity="capacity"
     )
@@ -123,29 +123,30 @@ def furthest_min_vertex_cut(G, X, Y, D, k):
 
     # Project: v ∈ Rmax iff v_out is reachable.
     # (This excludes cut vertices whose (v_in->v_out) edge is saturated.)
-    Rmax = FS({v for v in G.nodes if v not in D and (v, "out") in reachable})
+    Rmax = FS(
+        {v for v in G.nodes if v not in D and (v, "out") in reachable}
+    )
     return flow_value, FS(Rmax)
 
 
-def pick_boundary_vertex(G, Rmax, X, Y, D):
+def _pick_boundary_vertex(G, Rmax, X, Y, D):
     """
     Pick any vertex v outside Rmax that has a neighbor in Rmax,
     and is eligible (not in X,Y,D).
     """
-    Xset, Yset, Dset = set(X), set(Y), set(D)
     for u in Rmax:
         for v in G.neighbors(u):
             if (
                 v not in Rmax
-                and v not in Xset
-                and v not in Yset
-                and v not in Dset
+                and v not in X
+                and v not in Y
+                and v not in D
             ):
                 return v
     return None
 
 
-def rec_important(G, X, Y, k, D):
+def _rec_important(G, X, Y, k, D):
     """
     Recursive enumeration of important (X,Y)-vertex separators in G - D
     of size ≤ k. (X,Y,D disjoint; terminals in X∪Y cannot be deleted.)
@@ -158,14 +159,14 @@ def rec_important(G, X, Y, k, D):
             return Ø  # empty family
 
         # If already disconnected, empty separator is the unique important separator here
-        if not exists_path_avoiding(G, X, Y, D):
+        if not _exists_path_avoiding(G, X, Y, D):
             return FS([Ø])
 
-        lam, Rmax = furthest_min_vertex_cut(G, X, Y, D, k)
+        lam, Rmax = _furthest_min_vertex_cut(G, X, Y, D, k)
         if lam > k:
             return Ø
 
-        v = pick_boundary_vertex(G, Rmax, X, Y, D)
+        v = _pick_boundary_vertex(G, Rmax, X, Y, D)
         if v is None:
             # Should not happen when connected, but safe fallback
             return FS([Ø])
@@ -182,7 +183,7 @@ def rec_important(G, X, Y, k, D):
 
         return FS(out)
 
-    yield from rec(X, Y, k, D)
+    return rec(FS(X), FS(Y), k, FS(D))
 
 
 def important_separators(G, s, t, k):
@@ -200,4 +201,4 @@ def important_separators(G, s, t, k):
     Y0 = FS([t])
     D0 = Ø
 
-    yield from rec_important(G, FS(X0), FS(Y0), k, FS(D0))
+    return _rec_important(G, FS(X0), FS(Y0), k, FS(D0))
