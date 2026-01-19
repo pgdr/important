@@ -1,9 +1,9 @@
-build: important_separators.cpp
-	g++-14 -std=gnu++23 important_separators.cpp
+build: important_separators.cpp libimportant.cpp libimportant.hpp
+	g++-14 -std=gnu++23 important_separators.cpp libimportant.cpp
 	mv a.out enclose
 
-o3: important_separators.cpp
-	g++-14 -std=gnu++23 important_separators.cpp -O3
+o3: important_separators.cpp libimportant.cpp libimportant.hpp
+	g++-14 -std=gnu++23 important_separators.cpp libimportant.cpp -O3
 	mv a.out enclose
 
 clean:
